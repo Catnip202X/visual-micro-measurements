@@ -1,0 +1,12 @@
+# AOI YOLO sidecar dependencies.
+#
+# For CUDA-enabled PyTorch on the production GPU box, install torch/torchvision
+# from the PyTorch CUDA wheel index that matches the local driver first, then
+# install the rest of this file. The migrated workspace used CUDA 12.8 wheels.
+
+numpy>=2.0
+opencv-python>=4.10
+requests>=2.32
+torch>=2.5
+torchvision>=0.20
+ultralytics>=8.3

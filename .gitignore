@@ -1,0 +1,57 @@
+# Local production application and source image batches
+/lgp-main/
+/test images/*
+!/test images/README.md
+!/test images/metadata_template.json
+
+# Local environments and tool caches
+/.venv_yolo/
+/.codex_deps/
+/__pycache__/
+**/__pycache__/
+*.py[cod]
+
+# Generated datasets, masks, annotations, and review media
+/aoi_yolo/dataset_*/
+/aoi_yolo/product_mask/dataset_*/
+/aoi_yolo/hard_negatives_dust/source_clean_test_images/
+/aoi_yolo/hard_negatives_dust/candidate_filter_dataset/
+/aoi_yolo/ultralytics_config/
+/aoi_yolo/matplotlib_config/
+**/images/
+**/labels/
+**/masks/
+**/annotations/
+**/review_bmp/
+
+# Training/inference outputs and model artifacts
+/runs/
+/aoi_yolo/runs/
+/aoi_yolo/product_mask/runs/
+*.pt
+*.pth
+*.onnx
+*.engine
+*.torchscript
+*.tflite
+
+# Source images, overlays, and image metadata/labels
+*.bmp
+*.png
+*.jpg
+*.jpeg
+*.tif
+*.tiff
+*.json
+!/test images/metadata_template.json
+
+# Large or generated evaluation artifacts
+*.csv
+
+# IDE and OS noise
+.vs/
+.vscode/
+.idea/
+*.log
+Thumbs.db
+desktop.ini
