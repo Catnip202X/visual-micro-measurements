@@ -11,8 +11,6 @@ This repository is intentionally scoped to sidecar tooling:
 - lightweight training/evaluation notes
 - placeholder documentation for local BMP/JSON test batches
 
-The production C# AOI host application remains local in `lgp-main/` and is not part of this GitHub repository. It is still vital to development and future integration, but it is decoupled here to keep the public repo focused and safe to share.
-
 ## Data Policy
 
 The real inspection batches are not tracked:
