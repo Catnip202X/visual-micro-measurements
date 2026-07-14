@@ -21,6 +21,7 @@ It will:
 - replace the outdated `Immediate Next Steps` with a current prioritized sequence;
 - add a permanent dataset-sanitation and statistical-validation policy;
 - add changelog entry `#20` documenting the paper and team-meeting findings and why they change the project direction;
+- timestamp changelog `#20` and require timestamps on all future changelog entries, without inventing dates for historical entries `#1`-`#19`;
 - preserve the production C# application and existing experiment outputs;
 - keep the thesis PDF and meeting DOCX as local evidence sources unless the user separately authorizes committing those binary files.
 
@@ -121,6 +122,8 @@ Mark results statistically inconclusive when holdout support is too small. Opera
 
 ### 3. Changelog Entry #20
 
+Use the heading format `### #20 - <title> (YYYY-MM-DD HH:MM +/-HH:MM)`, recording the local workspace time with its current numeric UTC offset. All future changelog headings must follow the same timestamp format. Do not retrofit `#1`-`#19` because exact completion times are not reliably documented.
+
 The changelog will record:
 
 - the two evidence files reviewed;
@@ -145,6 +148,7 @@ The change is complete when:
 - `AGENTS.md` contains a current `Immediate Next Steps` sequence;
 - the permanent sanitation/validation policy contains all four user requirements with the five-run correction;
 - changelog `#20` accurately distinguishes current, thesis, and team results;
+- changelog `#20` has a local ISO-style timestamp with a numeric UTC offset, and the file instructs future entries to do the same;
 - no paper metric is presented as directly comparable to the current AOI event metrics;
 - no repeated inference pass is described as additional independent validation evidence;
 - no unrelated file is staged or committed;
