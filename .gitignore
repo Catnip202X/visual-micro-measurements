@@ -44,6 +44,8 @@
 *.tiff
 *.json
 !/test images/metadata_template.json
+!/aoi_yolo/historical_best_deep_eval/results/run_1_timing_graph.png
+!/aoi_yolo/historical_best_deep_eval/results/run_2_timing_graph.png
 
 # Large or generated evaluation artifacts
 *.csv

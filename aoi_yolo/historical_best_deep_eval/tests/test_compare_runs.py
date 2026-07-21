@@ -19,7 +19,14 @@ def score(tp_p, fp_p, fn_p, tp_s, fp_s, fn_s):
 
 def timings(values, contexts):
     return [
-        {"total_production_ms": value, "context": context, "timing_bracket": "<25 ms" if value < 25 else "25-50 ms"}
+        {
+            "total_production_ms": value,
+            "context": context,
+            "timing_bracket": "<25 ms" if value < 25 else "25-50 ms",
+            "target_objects": 0 if context == "no-target" else 1,
+            "raw_predictions": 0 if context == "no-target" else 2,
+            "kept_predictions": 0 if context == "no-target" else 1,
+        }
         for value, context in zip(values, contexts)
     ]
 
@@ -50,6 +57,9 @@ def test_compare_runs_writes_all_required_tests(tmp_path):
     assert result["timing"]["mann_whitney_p"] < 0.05
     assert "bracket_distribution" in result
     assert "composition_distribution" in result
+    assert set(result["numeric_composition_tests"]) == {
+        "target_objects", "raw_predictions", "kept_predictions"
+    }
     assert len(result["per_defect_metric_tests"]) == 4
     assert all("holm_p" in row for row in result["per_defect_metric_tests"])
     assert (tmp_path / "between_run_comparison.json").exists()

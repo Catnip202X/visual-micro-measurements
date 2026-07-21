@@ -108,6 +108,23 @@ def _two_proportion(success1: int, total1: int, success2: int, total2: int) -> d
     }
 
 
+def _numeric_distribution(run1: list[dict], run2: list[dict], field: str) -> dict:
+    first = np.asarray([float(row[field]) for row in run1], dtype=float)
+    second = np.asarray([float(row[field]) for row in run2], dtype=float)
+    mann_whitney = stats.mannwhitneyu(first, second, alternative="two-sided")
+    kolmogorov = stats.ks_2samp(first, second, alternative="two-sided", method="auto")
+    return {
+        "run_1_mean": float(np.mean(first)),
+        "run_2_mean": float(np.mean(second)),
+        "run_1_median": float(np.median(first)),
+        "run_2_median": float(np.median(second)),
+        "mann_whitney_u": float(mann_whitney.statistic),
+        "mann_whitney_p": float(mann_whitney.pvalue),
+        "ks_statistic": float(kolmogorov.statistic),
+        "ks_p": float(kolmogorov.pvalue),
+    }
+
+
 def _write_csv(path: Path, rows: list[dict]) -> None:
     fields = list(rows[0]) if rows else []
     with path.open("w", newline="", encoding="utf-8") as handle:
@@ -150,6 +167,10 @@ def compare_runs(
         Counter(row["context"] for row in run1_timing),
         Counter(row["context"] for row in run2_timing),
     )
+    numeric_composition_tests = {
+        field: _numeric_distribution(run1_timing, run2_timing, field)
+        for field in ("target_objects", "raw_predictions", "kept_predictions")
+    }
 
     metric_tests: list[dict] = []
     for label in ("pinhole", "scratch"):
@@ -176,6 +197,7 @@ def compare_runs(
         "timing": timing,
         "bracket_distribution": bracket_test,
         "composition_distribution": composition_test,
+        "numeric_composition_tests": numeric_composition_tests,
         "per_defect_metric_tests": metric_tests,
         "interpretation_rule": (
             "Assess composition before attributing differences to model instability; "
