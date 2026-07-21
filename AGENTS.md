@@ -116,6 +116,53 @@ Living notes for agents working in this workspace. Update this file after every 
 
 ## Changelog
 
+### #23 - Historical-Best Model Two-Run Deep Evaluation Direction (2026-07-21 16:07 -04:00)
+
+- Approved a deep offline evaluation of the historical best model at `aoi_yolo/runs/core2_bg_v2_yolo11n_seg_e120_i1280_b1_from_bg_best/weights/best.pt`, using its frozen 1280-pixel input and historical balanced cascade that previously produced 83.56% recall and 83.22% precision.
+- Prepare two mutually exclusive, group-aware randomized datasets of exactly 500 images each from canonical BMP/LabelMe pairs that are excluded from the model's historical train and validation membership. Preserve production prevalence and freeze seeds, hashes, groups, and manifests.
+- Simulate production timing in a dedicated first pass: load each image before timing, then time model preprocessing, synchronized inference, prediction/mask postprocessing, record conversion, and the frozen confidence/area cascade. Do not perform JSON ground-truth work inside or between timed images.
+- Run inference exactly once per measured image. Cache predictions and timing rows, then perform a separate offline scoring loop that consumes the cache without invoking the model again.
+- For each run and defect type, report dataset image/object support, TP/FP/FN, slipped defects, recall, precision, F1, mean matched mask IoU, and 95% Wilson intervals.
+- Report production-path timing distributions, fixed timing-bracket counts, and timing grouped by pinhole-only, scratch-only, mixed, and no-target/context images. Test relationships with defect category, object counts, prediction counts, dimensions, and pixel count.
+- Compare the two independent runs using distribution tests, bootstrap differences, effect sizes, bracket-composition tests, per-defect metric differences, and correction for multiple category comparisons. Composition differences must be separated from evidence of model instability.
+- The approved design is `docs/superpowers/specs/2026-07-21-historical-best-two-run-deep-evaluation-design.md`. This entry records direction only and does not claim that manifests, inference, statistics, or reports are complete.
+- Keep the production C# AOI application untouched.
+
+### #22 - CLAHE 200-Per-Class Training And 500-Image Validation Completed (2026-07-21 14:02 -04:00)
+
+- Approved the next controlled offline direction: train a focused YOLO11n segmentation model for merged `pinhole`/`inpinhole` and `scratch` using exactly 200 independent positive training images per target class, without satisfying quotas through duplicate or augmented copies.
+- Reserve a deterministic, group-aware random 500-image validation holdout that is completely disjoint from training and approximately retains canonical production prevalence.
+- Apply deterministic CLAHE preprocessing with `clipLimit=2.0` and an `8x8` tile grid to training and inference images to strengthen weak-scratch visibility, with conservative brightness, contrast, and gamma augmentation only during training.
+- Reuse the current 1280-pixel YOLO11n-seg training family and fixed historical balanced confidence/area cascade; initialize from clean base weights so the new holdout is not exposed through an older AOI checkpoint.
+- Validate all 500 images against original LabelMe polygons with class-aware one-to-one matching at `hit_iou=0.05` and report per-class and aggregate TP, FP, FN, slipped-defect identities, precision, recall, F1, strict mask evidence, and 95% confidence intervals.
+- Warm up the GPU, record synchronized staged and end-to-end timing for every holdout image, and generate a reproducible 500-image timing graph plus p50, p95, maximum, and defect-context timing statistics.
+- This entry records an approved experiment direction only. It does not claim that dataset preparation, training, evaluation, or timing has completed, and it does not modify the production C# AOI application.
+- Recorded the approved design at `docs/superpowers/specs/2026-07-20-clahe-200-per-class-500-holdout-design.md` and the executable plan at `docs/superpowers/plans/2026-07-20-clahe-200-per-class-500-holdout.md`.
+- Implementation is isolated under `aoi_yolo/clahe_200x500/` and currently covers audited LabelMe loading, deterministic group/quota selection, CLAHE preprocessing, derived YOLO data, frozen training arguments, one-to-one matching, Wilson intervals, slipped-defect rows, and timing plots with automated tests. Full canonical manifest preparation, smoke training, full training, and 500-image measured results remain pending and must not be inferred from this progress note.
+- Perceptual-hash threshold review found that automatic pHash unioning is invalid for these visually homogeneous AOI frames: DCT Hamming distance `<=6` created a false 2,698-image component, distance `<=2` created a 1,405-image component, and even exact pHash equality produced components up to 128 images. The experiment therefore records pHash values and the rejected threshold evidence but freezes roles using the previously SHA-deduplicated canonical set plus conservative 25-image sequence groups.
+- Frozen seed-`20260720` manifests now contain exactly 500 disjoint holdout images and 1,071 training images. Training representation is exactly 200 independent positive images for merged `pinhole` and 200 for `scratch`, with 779 additional context/background images; holdout prevalence contains 292 pinhole-positive, 75 scratch-positive, and 190 context images.
+- Generated and reconciled 1,071 CLAHE training PNG/label pairs and 500 CLAHE holdout PNG/label pairs with 1,571 derived checksum rows. Ultralytics path preflight resolves both split directories from the portable dataset YAML.
+- The full-membership one-epoch smoke run completed in 497.779 seconds, saved and reloaded `best.pt`/`last.pt`, and evaluated all 500 holdout images containing 1,070 target objects. Ultralytics reported about 7.0 ms model inference per image, but the smoke model's accuracy is intentionally immature and is not a final quality claim.
+- Added `run_training_only.cmd` and launched the unchanged 120-epoch configuration through a detached Windows process after proving that a healthy foreground trainer was terminated only when its command-task lifecycle ended. Preserved both incomplete attempts as `runs/full_stalled_pre_epoch_20260720_2050` and `runs/full_interrupted_turn_end_20260720_2134`; neither contained a resumable checkpoint. The detached run uses the same frozen manifests/config, has exactly one verified trainer command, and is actively advancing through epoch 1.
+- At epoch 23 the detached trainer stopped abruptly without a Python or CUDA traceback. Windows System Event Log recorded NVIDIA driver provider `nvlddmkm` event ID 153 at `2026-07-21 00:53:49 -04:00`, exactly matching the final log write, so this is treated as an external GPU-driver interruption rather than a model/config failure. The epoch-22 `last.pt` checkpoint was retained; the launcher now forwards command-line arguments so recovery can use the existing locked `--resume` path without changing manifests or training arguments.
+- Completed all 120 epochs after the single checkpoint recovery. Approximate summed trainer time was 54,378 seconds (15 h 06 m), excluding the interruption/relaunch gap. Reloaded `best.pt` validation reported box mAP50 64.1% and mask mAP50 38.9% across all 500 holdout images and 1,070 objects.
+- Completed class-aware one-to-one polygon evaluation at `hit_iou=0.05`. Raw confidence 0.05 produced TP/FP/FN `892/901/178`, recall 83.36% (95% CI 81.01-85.48%), precision 49.75% (47.44-52.06%), and F1 62.31%. The historical balanced cascade produced `537/149/533`, recall 50.19% (47.20-53.18%), precision 78.28% (75.04-81.20%), and F1 61.16%.
+- Balanced per-class results were pinhole `439/24/501`, recall 46.70%, precision 94.82%, F1 62.58%; scratch `98/125/32`, recall 75.38%, precision 43.95%, F1 55.52%. Raw per-class results were pinhole `776/379/164` and scratch `116/522/14`.
+- Reconciled both operating points to exactly 1,070 ground-truth objects. Slipped-defect CSVs contain exactly 178 raw FN rows and 533 balanced FN rows, with Wilson intervals present at aggregate and per-class levels.
+- Recorded exactly 500 unique timing rows and generated `aoi_yolo/clahe_200x500/TIMING_500_IMAGES.png`. End-to-end timing was mean 469.71 ms, p50 207.18 ms, p95 1,365.07 ms, maximum 20,047.00 ms; model inference alone was mean 12.38 ms and p95 17.52 ms.
+- The extreme timing tail comes from Python polygon matching/postprocessing on dense images (maximum 19,518.02 ms), not GPU inference. This validation evaluator must be optimized before its end-to-end timing is treated as production throughput.
+- The experiment does not meet the 95-98% production target: the balanced cascade slips too many pinholes, while raw inference creates too many false positives. Full commands, confidence intervals, limitations, and artifact paths are recorded in `aoi_yolo/clahe_200x500/CLAHE_200X500_RESULTS.md`.
+- Final verification passed all 19 focused tests; the production C# AOI application remained untouched.
+
+### #21 - Extended LabelMe Test Dataset Merged And Deduplicated (2026-07-15 14:51 -04:00)
+
+- Combined `test images extended` into the canonical `test images` dataset while preserving BMP/LabelMe JSON pairs.
+- Verified all 907 same-name overlaps byte-for-byte with SHA-256 for both BMP images and JSON metadata, moved 2,177 new pairs, and removed the verified redundant source copies.
+- Ran a full SHA-256 image audit and found seven additional pixel-identical pairs under different filenames.
+- Because those seven pairs contained different annotation revisions, retained the copy with more labeled shapes; for equal shape counts, retained the later-numbered revision. Removed `2390`, `2797`, `2806`, `2860`, `2861`, `3403`, and `3423` with their paired JSON files.
+- Final canonical dataset contains 3,077 uniquely named, content-unique BMP images and 3,077 corresponding LabelMe JSON files. The unrelated `drive_manifest.json` and `metadata_template.json` support files remain in place.
+- `test images extended` retains only its non-dataset `classes.txt`; no BMP or LabelMe JSON pairs remain there.
+
 ### #20 - Thesis And Team Findings Converted Into Dataset And Validation Policy (2026-07-14 12:18 -04:00)
 
 - Reviewed `滤光片瑕疵检测装备硕士论文.pdf` and the team summary `7.13.docx`, then converted supported findings into dataset, training, validation, and reporting instructions.
