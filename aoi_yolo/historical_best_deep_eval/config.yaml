@@ -1,0 +1,21 @@
+weights: aoi_yolo/runs/core2_bg_v2_yolo11n_seg_e120_i1280_b1_from_bg_best/weights/best.pt
+canonical_source: test images
+historical_dataset: aoi_yolo/dataset_core2_bg_v2
+imgsz: 1280
+raw_confidence: 0.05
+hit_iou: 0.05
+device: "0"
+max_det: 300
+rules:
+  pinhole:
+    confidence: 0.30
+    minimum_area: 150
+  scratch:
+    confidence: 0.20
+    minimum_area: 300
+run_seeds: [2026072101, 2026072102]
+images_per_run: 500
+sequence_group_size: 25
+warmup_count: 10
+timing_brackets_ms: [0, 25, 50, 100, 200, 500, 1000, inf]
+

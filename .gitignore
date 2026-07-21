@@ -47,6 +47,9 @@
 
 # Large or generated evaluation artifacts
 *.csv
+/aoi_yolo/historical_best_deep_eval/generated/
+/aoi_yolo/historical_best_deep_eval/results/private/
+*.jsonl.gz
 
 # IDE and OS noise
 .vs/

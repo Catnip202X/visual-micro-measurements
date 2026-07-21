@@ -127,6 +127,7 @@ Living notes for agents working in this workspace. Update this file after every 
 - Compare the two independent runs using distribution tests, bootstrap differences, effect sizes, bracket-composition tests, per-defect metric differences, and correction for multiple category comparisons. Composition differences must be separated from evidence of model instability.
 - The approved design is `docs/superpowers/specs/2026-07-21-historical-best-two-run-deep-evaluation-design.md`. This entry records direction only and does not claim that manifests, inference, statistics, or reports are complete.
 - The executable implementation plan is `docs/superpowers/plans/2026-07-21-historical-best-two-run-deep-evaluation.md`; it enforces test-first manifest exclusion, exactly-once production inference, cached CPU-only scoring, per-run timing/accuracy analysis, and between-run statistical comparison.
+- Implementation progress: added the isolated `aoi_yolo/historical_best_deep_eval/` package with frozen historical weights/thresholds, two deterministic seeds, fixed timing brackets, portable `AOI_DATA_ROOT` resolution for private local data, and a SHA-256 experiment identity. Configuration tests pass.
 - Keep the production C# AOI application untouched.
 
 ### #22 - CLAHE 200-Per-Class Training And 500-Image Validation Completed (2026-07-21 14:02 -04:00)
